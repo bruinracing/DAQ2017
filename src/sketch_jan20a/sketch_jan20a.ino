@@ -1,5 +1,6 @@
 int lastInterruptIndex = -1;
-char InterruptLog[1024] = {0};
+char InterruptLog[256] = {0};
+unsigned long TimeLog[256] = {0};
 
 
 void setup()
@@ -64,6 +65,7 @@ ISR(PCINT1_vect) {    // Interrupt service routine. Every single PCINT8..14 (=AD
   if (store > 0x0){
     lastInterruptIndex++;
     InterruptLog[lastInterruptIndex] = store;
+    TimeLog[lastInterruptIndex] = micros();
   }  
 }
 
