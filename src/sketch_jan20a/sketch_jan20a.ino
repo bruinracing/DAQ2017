@@ -1,7 +1,4 @@
-#include <avr/pgmspace.h>
-
 int lastInterruptIndex = -1;
-int headIntIndex = -1;
 char InterruptLog[256] = {0};
 unsigned long TimeLog[256] = {0};
 bool ramOverflow = false;
