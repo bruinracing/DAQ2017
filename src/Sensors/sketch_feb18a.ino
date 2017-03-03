@@ -38,6 +38,7 @@ float sensorReading4 = 0.00;
 float sensorReading5 = 0.00;
 float sensorReading6 = 0.00;
 float sensorReading7 = 0.00;
+float sensorReading8 = 0.00;
 File sensorData;
 
 void setup()
@@ -116,9 +117,15 @@ void printAttitude(float ax, float ay, float az, float mx, float my, float mz)
 }
 
 void loop(){
+  //These two reads are just raw voltage as a float from A0 and A1.
   int A0 = analogRead(0);
   sensorReading1 = A0;
   sensorReading1 = (sensorReading1 * 5.0) / 1023.0;
+  
+  int A1 = analogRead(1);
+  sensorReading2 = A1;
+  sensorReading2 = (sensorReading2 * 5.0) / 1023.0;
+
     //Begin IMU data collection
     // Update the sensor values whenever new data is available
   if ( imu.gyroAvailable() )
@@ -145,19 +152,19 @@ void loop(){
   
   if ((lastPrint + PRINT_SPEED) < millis())
   {
-    sensorReading2 = imu.calcGyro(imu.gx);
-    sensorReading3 = imu.calcGyro(imu.gy);
-    sensorReading4 = imu.calcGyro(imu.gz);
+    sensorReading3 = imu.calcGyro(imu.gx);
+    sensorReading4 = imu.calcGyro(imu.gy);
+    sensorReading5 = imu.calcGyro(imu.gz);
     //accel readings
-    sensorReading5 = imu.calcAccel(imu.ax);
-    sensorReading6 = imu.calcAccel(imu.ay);
-    sensorReading7 = imu.calcAccel(imu.az);
+    sensorReading6 = imu.calcAccel(imu.ax);
+    sensorReading7 = imu.calcAccel(imu.ay);
+    sensorReading8 = imu.calcAccel(imu.az);
     
     
     lastPrint = millis(); // Update lastPrint time
   }
   // build the data string
-  dataString = String(sensorReading1) + "," + String(sensorReading2) + "," + String(sensorReading3) + "," + String(sensorReading4) + "," + String(sensorReading5) + "," + String(sensorReading6) + "," + String(sensorReading7) + ","; // convert to CSV
+  dataString = String(sensorReading1) + "," + String(sensorReading2) + "," + String(sensorReading3) + "," + String(sensorReading4) + "," + String(sensorReading5) + "," + String(sensorReading6) + "," + String(sensorReading7) + "," + String(sensorReading8) + ","; // convert to CSV
   saveData(); // save to SD card
   //delay(60000); // delay before next write to SD Card, adjust as required
 }
