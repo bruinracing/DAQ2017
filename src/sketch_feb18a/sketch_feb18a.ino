@@ -41,6 +41,22 @@ float sensorReading7 = 0.00;
 float sensorReading8 = 0.00;
 File sensorData;
 
+
+///////////////////////////////////////////////////////
+// Non IMU related stuff
+
+
+#define shockLeftPot A0
+#define shockRightPot A1
+#define brakePressureFront A2
+
+float brakePressureFrontValue;
+float shockLeftPos;
+float shockRightPos;
+float refresh_RotaryPotentiometer(int sensorValue, int degrees);
+
+
+
 void setup()
 {
   // Open serial communications
@@ -115,16 +131,13 @@ void printAttitude(float ax, float ay, float az, float mx, float my, float mz)
   Serial.println(roll, 2);
   Serial.print("Heading: "); Serial.println(heading, 2);
 }
+///////////////////////////////////////////////////////////////////
 
 void loop(){
   //These two reads are just raw voltage as a float from A0 and A1.
-  int A0 = analogRead(0);
-  sensorReading1 = A0;
-  sensorReading1 = (sensorReading1 * 5.0) / 1023.0;
-  
-  int A1 = analogRead(1);
-  sensorReading2 = A1;
-  sensorReading2 = (sensorReading2 * 5.0) / 1023.0;
+shockLeftPos= refresh_RotaryPotentiometer(analogRead(shockLeftPot),360);
+ shockRightPos = refresh_RotaryPotentiometer(analogRead(shockRightPot),360);
+ brakePressureFrontValue = (analogRead(brakePressureFront)*5.0/1023.0-.5)/4*5000;
 
     //Begin IMU data collection
     // Update the sensor values whenever new data is available
@@ -164,7 +177,9 @@ void loop(){
     lastPrint = millis(); // Update lastPrint time
   }
   // build the data string
-  dataString = String(sensorReading1) + "," + String(sensorReading2) + "," + String(sensorReading3) + "," + String(sensorReading4) + "," + String(sensorReading5) + "," + String(sensorReading6) + "," + String(sensorReading7) + "," + String(sensorReading8) + ","; // convert to CSV
+  dataString = String(sensorReading1) + "," + String(sensorReading2) + "," + String(sensorReading3) + "," + String(sensorReading4) + "," + String(sensorReading5) + "," + String(sensorReading6) + "," + String(sensorReading7) + "," + String(sensorReading8) + ","// for IMU
+  + String(shockLeftPos) + "," + String(shockRightPos) + ","  + String(brakePressureFrontValue) + ",";
+   // convert to CSV
   saveData(); // save to SD card
   //delay(60000); // delay before next write to SD Card, adjust as required
 }
@@ -181,4 +196,12 @@ void saveData(){
   else{ 
     Serial.println("Error writing to file !");
   }
+}
+
+float refresh_RotaryPotentiometer(int sensorValue, int degrees)
+{
+  // Black is Vout
+  // Convert the analog reading (which goes from 0 - 1023) to a voltage (0 - 5V):
+  float voltage = sensorValue * (5.0 / 1023.0);
+  return  -(voltage - 2.5)/5*degrees;
 }
