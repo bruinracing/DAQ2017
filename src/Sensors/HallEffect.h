@@ -5,7 +5,7 @@ const double wheelCircumference = 10/12.0/5280*PI; // in miles
 const int    pulsesPerRev       = 4;
 const int    movingAverageNum   = 4;
 
-struct hallEffect {
+typedef struct hallEffect {
     bool   curState;
     bool   pastState;
     double timetemp1;
@@ -14,7 +14,7 @@ struct hallEffect {
     int    pinNum;
     double wheelSpeeds[pulsesPerRev];
     double *head = wheelSpeeds;
-};
+} hallEffect;
 
 void refresh_WheelSpeed(hallEffect & sensor) // this is current set to one click per rotation
 {
