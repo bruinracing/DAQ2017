@@ -10,12 +10,15 @@ bool initSD(int pin) {
     if (!SD.begin(pin)) {
         return false;
     }
+    if( SD.exists("data.csv") ){
+      SD.remove("data.csv");
+    }
     File sensorData = SD.open("data.csv", FILE_WRITE);
     sensorData.close();
     return true;
 }
 
-bool saveData(String dataString) {
+bool saveData(const String& dataString) {
     if(SD.exists("data.csv")){ // check the card is still there
         // now append new data file
         File sensorData = SD.open("data.csv", FILE_WRITE);
