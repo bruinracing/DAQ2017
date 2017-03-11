@@ -2,6 +2,7 @@
 #include "HallEffect.h"
 #include "IMU.h"
 #include "SDHelper.h"
+#include <Time.h>
 
 /* hallEffect leftHall, rightHall; */
 potentiometer shockLeftPot, shockRightPot;
@@ -12,15 +13,15 @@ LSM9DS1 imu;
 // 53 on the Mega) must be left as an output or the SD
 // library functions will not work.
 const int CSpin = 10;
-String dataString = ""; // holds the data to be written to the SD card
+String dataString; // holds the data to be written to the SD card
 float sensorReading1 = 0.00; // value read from your first sensor
 float sensorReading2 = 0.00; // value read from your second sensor
-float sensorReading3 = 0.00; // value read from your third sensor
-float sensorReading4 = 0.00;
-float sensorReading5 = 0.00;
-float sensorReading6 = 0.00;
-float sensorReading7 = 0.00;
-float sensorReading8 = 0.00;
+float gyroX = 0.00; // value read from your third sensor
+float gyroY = 0.00;
+float gyroZ = 0.00;
+float accelX = 0.00;
+float accelY = 0.00;
+float accelZ = 0.00;
 
 #define PRINT_SPEED 250 // 250 ms between prints
 static unsigned long lastPrint = 0; // Keep track of print time
@@ -67,6 +68,11 @@ void setup() {
         while (1)
             ;
     }
+    //saveData(now());
+    
+    String titles = "Gyro X, Gyro Y, Gyro Z, Accel X, Accel Y, Accel Z, Left Shock, Right Shock, Brake Pressure,";
+    saveData(titles);
+    titles = "";
 }
 
 // the loop routine runs over and over again forever:
@@ -80,27 +86,46 @@ void loop() {
 
     if ((lastPrint + PRINT_SPEED) < millis())
     {
-        sensorReading3 = imu.calcGyro(imu.gx);
-        sensorReading4 = imu.calcGyro(imu.gy);
-        sensorReading5 = imu.calcGyro(imu.gz);
+        gyroX = imu.calcGyro(imu.gx);
+        gyroY = imu.calcGyro(imu.gy);
+        gyroZ = imu.calcGyro(imu.gz);
         //accel readings
-        sensorReading6 = imu.calcAccel(imu.ax);
-        sensorReading7 = imu.calcAccel(imu.ay);
-        sensorReading8 = imu.calcAccel(imu.az);
+        accelX = imu.calcAccel(imu.ax);
+        accelY = imu.calcAccel(imu.ay);
+        accelZ = imu.calcAccel(imu.az);
         lastPrint = millis(); // Update lastPrint time
     }
     // build the data string
-    dataString = String(sensorReading1) + "," +
-                 String(sensorReading2) + "," +
-                 String(sensorReading3) + "," +
-                 String(sensorReading4) + "," +
-                 String(sensorReading5) + "," +
-                 String(sensorReading6) + "," +
-                 String(sensorReading7) + "," +
-                 String(sensorReading8) + "," + // for IMU
-                 String(shockLeftPos)   + "," +
-                 String(shockRightPos)  + "," +
-                 String(brakePressureFrontValue) + ",";
+    
+    //dataString = String(sensorReading1) + ",";
+    //dataString += String(sensorReading2) + ",";
+    dataString = String(gyroX) + ",";
+    dataString += String(gyroY) + ",";
+    dataString += String(gyroZ) + ",";
+    dataString += String(accelX) + ",";
+    dataString += String(accelY) + ",";    
+    dataString += String(accelZ) + ","; // for IMU
+    
+    dataString += String(shockLeftPos)+ ",";
+    dataString += String(shockRightPos)  + ",";
+    dataString += String(brakePressureFrontValue) + ",";
+    
+
+    // Debug print statements
+    Serial.print( "Gyro X: " );
+    Serial.println(gyroX);
+    Serial.print( "Gyro Y: " );
+    Serial.println(gyroY);
+    Serial.print( "Gyro Z: " );
+    Serial.println(gyroZ);
+    Serial.print( "Accel X: " );
+    Serial.println(accelX);
+    Serial.print( "Accel Y: " );
+    Serial.println(accelY);
+    Serial.print( "Accel Z: " );
+    Serial.println(accelZ);
+    
+    //Serial.println ( brakePressureFrontValue );
     // convert to CSV
     saveData(dataString); // save to SD card
 }
