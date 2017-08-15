@@ -2,7 +2,8 @@
 #include "HallEffect.h"
 #include "IMU.h"
 #include "SDHelper.h"
-#include <Time.h>
+
+#define DEBUG 0
 
 /* hallEffect leftHall, rightHall; */
 potentiometer shockLeftPot, shockRightPot;
@@ -13,6 +14,7 @@ LSM9DS1 imu;
 // 53 on the Mega) must be left as an output or the SD
 // library functions will not work.
 const int CSpin = 10;
+
 String dataString; // holds the data to be written to the SD card
 float sensorReading1 = 0.00; // value read from your first sensor
 float sensorReading2 = 0.00; // value read from your second sensor
@@ -23,19 +25,17 @@ float accelX = 0.00;
 float accelY = 0.00;
 float accelZ = 0.00;
 
-#define PRINT_SPEED 250 // 250 ms between prints
+#define PRINT_SPEED 1000 // 250 ms between prints
 static unsigned long lastPrint = 0; // Keep track of print time
 
 float shockLeftPos, shockRightPos;
 float brakePressureFrontValue;
 
 void setup() {
-    Serial.begin(115200);
-
-    if (!initSD(CSpin)) {
-        Serial.println("Card error");
-        while(1);
-    }
+  Serial.begin(115200);
+  pinMode(cardDetect, INPUT);
+  initializeCard();
+    
 
     /* rightHall.pinNum=3; */
     /* leftHall.pinNum=4; */
@@ -48,42 +48,26 @@ void setup() {
     shockRightPot.degrees = 360;
 
     Serial.println("Beginning IMU initialization.");
-    // Before initializing the IMU, there are a few settings
-    // we may need to adjust. Use the settings struct to set
-    // the device's communication mode and addresses:
     imu.settings.device.commInterface = IMU_MODE_I2C;
     imu.settings.device.mAddress = LSM9DS1_M;
     imu.settings.device.agAddress = LSM9DS1_AG;
-    // The above lines will only take effect AFTER calling
-    // imu.begin(), which verifies communication with the IMU
-    // and turns it on.
     if (!imu.begin())
     {
         Serial.println("Failed to communicate with LSM9DS1.");
-        Serial.println("Double-check wiring.");
-        Serial.println("Default settings in this sketch will " \
-                "work for an out of the box LSM9DS1 " \
-                "Breakout, but may need to be modified " \
-                "if the board jumpers are.");
         while (1)
             ;
     }
-    //saveData(now());
-    
-    String titles = "Gyro X, Gyro Y, Gyro Z, Accel X, Accel Y, Accel Z, Left Shock, Right Shock, Brake Pressure,";
-    saveData(titles);
-    titles = "";
 }
 
 // the loop routine runs over and over again forever:
 void loop() {
+  /*
     shockLeftPos  = refresh_RotaryPotentiometer(shockLeftPot);
     shockRightPos = refresh_RotaryPotentiometer(shockRightPot);
     brakePressureFrontValue = (analogRead(brakePressureFront)*5.0/1023.0-.5)/4*5000;
-
+*/
     /* refresh_WheelSpeed(rightHall); */
     refresh_IMU(imu);
-
     if ((lastPrint + PRINT_SPEED) < millis())
     {
         gyroX = imu.calcGyro(imu.gx);
@@ -112,20 +96,25 @@ void loop() {
     
 
     // Debug print statements
+    #if DEBUG
     Serial.print( "Gyro X: " );
     Serial.println(gyroX);
     Serial.print( "Gyro Y: " );
     Serial.println(gyroY);
     Serial.print( "Gyro Z: " );
     Serial.println(gyroZ);
+    
     Serial.print( "Accel X: " );
     Serial.println(accelX);
     Serial.print( "Accel Y: " );
     Serial.println(accelY);
     Serial.print( "Accel Z: " );
     Serial.println(accelZ);
+    #endif
     
     //Serial.println ( brakePressureFrontValue );
     // convert to CSV
     saveData(dataString); // save to SD card
 }
+
+
